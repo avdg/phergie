@@ -69,12 +69,11 @@ class Phergie_Plugin_Handler implements IteratorAggregate, Countable
     protected $events;
 
     /**
-     * Name of the class to use for iterating over all currently loaded
-     * plugins
+     * Array of current filters to be used by our plugins iterator
      *
-     * @var string
+     * @var array
      */
-    protected $iteratorClass = 'Phergie_Plugin_Iterator';
+    protected $filters = array();
 
     /**
      * Constructor to initialize class properties and add the path for core
@@ -425,54 +424,30 @@ class Phergie_Plugin_Handler implements IteratorAggregate, Countable
     }
 
     /**
-     * Returns an iterator for all currently loaded plugin instances.
+     * Returns the iterator for all currently loaded plugin instances.
      *
-     * @return ArrayIterator
+     * @return Phergie_Plugin_Iterator
      */
     public function getIterator()
     {
-        return new $this->iteratorClass(
-            new ArrayIterator($this->plugins)
-        );
+        return new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), $this->filters);
     }
 
-    /**
-     * Sets the iterator class used for all currently loaded plugin
-     * instances.
-     *
-     * @param string $class Name of a class that extends FilterIterator
-     *
-     * @return Phergie_Plugin_Handler Provides a fluent API
-     * @throws Phergie_Plugin_Exception Class cannot be found or is not an
-     *         FilterIterator-based class
-     */
-    public function setIteratorClass($class)
-    {
-        $valid = true;
-
-        try {
-            $error_reporting = error_reporting(0); // ignore autoloader errors
-            $r = new ReflectionClass($class);
-            error_reporting($error_reporting);
-            if (!$r->isSubclassOf('FilterIterator')) {
-                $message = 'Class ' . $class
-                    . ' is not a subclass of FilterIterator';
-                $valid = false;
-            }
-        } catch (ReflectionException $e) {
-            $message = $e->getMessage();
-            $valid = false;
-        }
-
-        if (!$valid) {
-            throw new Phergie_Plugin_Exception(
-                $message,
-                Phergie_Plugin_Exception::ERR_INVALID_ITERATOR_CLASS
-            );
-        }
-
-        $this->iteratorClass = $class;
-    }
+	/**
+	 * Adds the specified filter, to be used by the plugins iterator
+	 * The filter will be used by every iterator from getIterator() as long as
+	 * the current connection stays the same (i.e. on setConnection() the
+	 * list of filters is reset automatically)
+	 *
+	 * @param Phergie_Plugin_Filter_Abstract $filter	filter object
+	 *
+	 * @return Phergie_Plugin_Handler					Provides a fluent API
+	 */
+	public function addFilter(Phergie_Plugin_Filter_Abstract $filter)
+	{
+		$this->filters[] = $filter;
+		return $this;
+	}
 
     /**
      * Proxies method calls to all plugins containing the called method.
@@ -484,6 +459,10 @@ class Phergie_Plugin_Handler implements IteratorAggregate, Countable
      */
     public function __call($name, array $args)
     {
+        // if the currently active connection is being set, we reset the filters
+        if ('setConnection' == $name) {
+        	$this->filters = array();
+        }
         foreach ($this->getIterator() as $plugin) {
             call_user_func_array(array($plugin, $name), $args);
         }

@@ -20,8 +20,7 @@
  */
 
 /**
- * Implements a filtering iterator for limiting executing of methods across
- * a group of plugins.
+ * Implements a filtering iterator for plugins.
  *
  * @category Phergie
  * @package  Phergie
@@ -32,86 +31,36 @@
 class Phergie_Plugin_Iterator extends FilterIterator
 {
     /**
-     * List of short names of plugins to exclude when iterating
+     * Array of filters to be used
      *
      * @var array
      */
-    protected $plugins = array();
+    protected $filters = array();
 
     /**
-     * List of method names where plugins with these methods will be
-     * excluded when iterating
+     * Constructor -- We set up the filters to be used
      *
-     * @var array
-     */
-    protected $methods = array();
-
-    /**
-     * Overrides the parent constructor to reset the internal iterator's
-     * pointer to the current item, which the parent class errantly does not
-     * do.
-     *
-     * @param Iterator $iterator Iterator to filter
+     * @param Iterator               $iterator			Iterator to filter
+     * @param array                  $filters			Filters to be used
      *
      * @return void
-     * @link http://bugs.php.net/bug.php?id=52560
      */
-    public function __construct(Iterator $iterator)
+    public function __construct(Iterator $iterator, array $filters)
     {
+        $this->filters = $filters;
         parent::__construct($iterator);
-        $this->rewind();
     }
 
-    /**
-     * Adds to a list of plugins to exclude when iterating.
+	/**
+     * Fixes a bug in FilterIterator
      *
-     * @param mixed $plugins String containing the short name of a single
-     *        plugin to exclude or an array of short names of multiple
-     *        plugins to exclude
-     *
-     * @return Phergie_Plugin_Iterator Provides a fluent interface
-     */
-    public function addPluginFilter($plugins)
-    {
-        if (is_array($plugins)) {
-            $this->plugins = array_unique(
-                array_merge($this->plugins, $plugins)
-            );
-        } else {
-            $this->plugins[] = $plugins;
-        }
-        return $this;
-    }
-
-    /**
-     * Adds to a list of method names where plugins defining these methods
-     * will be excluded when iterating.
-     *
-     * @param mixed $methods String containing the name of a single method
-     *        or an array containing the name of multiple methods
-     *
-     * @return Phergie_Plugin_Iterator Provides a fluent interface
-     */
-    public function addMethodFilter($methods)
-    {
-        if (is_array($methods)) {
-            $this->methods = array_merge($this->methods, $methods);
-        } else {
-            $this->methods[]= $methods;
-        }
-        return $this;
-    }
-
-    /**
-     * Clears any existing plugin and methods filters.
-     *
-     * @return Phergie_Plugin_Iterator Provides a fluent interface
-     */
-    public function clearFilters()
-    {
-        $this->plugins = array();
-        $this->methods = array();
-    }
+     * @return mixed
+     * @link http://bugs.php.net/bug.php?id=52560
+	 */
+	public function current()
+	{
+		return $this->getInnerIterator()->current();
+	}
 
     /**
      * Implements FilterIterator::accept().
@@ -121,22 +70,15 @@ class Phergie_Plugin_Iterator extends FilterIterator
      */
     public function accept()
     {
-        if (!$this->plugins && !$this->methods) {
+        if (empty($this->filters)) {
             return true;
         }
-
-        $current = $this->current();
-
-        if (in_array($current->getName(), $this->plugins)) {
-            return false;
-        }
-
-        foreach ($this->methods as $method) {
-            if (method_exists($current, $method)) {
-                return false;
-            }
-        }
-
-        return true;
+    	$plugin = $this->current();
+    	foreach ($this->filters as $filter) {
+    		if (!$filter->accept($plugin)) {
+    			return false;
+    		}
+    	}
+    	return true;
     }
 }
