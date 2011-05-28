@@ -837,6 +837,14 @@ class Phergie_Plugin_HandlerTest extends PHPUnit_Framework_TestCase
 
         $iterator2 = $this->handler->getIterator();
         $this->assertSame($plugin1, $iterator2->current());
+        $this->assertSame($plugin2, $iterator1->current());
+
+        $iterator3 = $this->handler->getIterator();
+        $this->assertSame($plugin1, $iterator3->current());
+
+        $iterator2->next();
+        $this->assertSame($plugin2, $iterator2->current());
+        $this->assertSame($plugin1, $iterator3->current());
     }
 
     /**
