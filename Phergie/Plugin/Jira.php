@@ -76,6 +76,11 @@ class Phergie_Plugin_Jira extends Phergie_Plugin_Abstract
         $source = $this->event->getSource();
         $message = $this->event->getArgument(1);
 
+        // ignore if it was said in channel
+        if ($source[0] === '#') {
+            return;
+        }
+
         if (!preg_match(self::certify_pattern, $message, $matches)) {
             return;
         }
