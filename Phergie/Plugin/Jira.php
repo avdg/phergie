@@ -94,7 +94,7 @@ class Phergie_Plugin_Jira extends Phergie_Plugin_Abstract
             if ($e->faultcode == 'soapenv:Server.userException') {
                 $this->login();
                 try {
-                    $response = $this->addComment($key, $source);
+                    $response = $this->addComment($key, $comment);
                 } catch (Exception $e) {
                 }
             }
