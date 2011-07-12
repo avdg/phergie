@@ -30,12 +30,12 @@
  */
 abstract class Phergie_Plugin_Filter_Abstract
 {
-	/**
-	 * Returns whether or not the given plugin is acceptable
-	 *
-	 * @param Phergie_Plugin_Abstract		the plugin to filter
-	 *
-	 * @return bool							TRUE to include the plugin, FALSE otherwise
-	 */
-	abstract function accept(Phergie_Plugin_Abstract $plugin);
+    /**
+     * Returns whether or not the given plugin is acceptable
+     *
+     * @param Phergie_Plugin_Abstract The plugin to filter
+     *
+     * @return bool TRUE to include the plugin, FALSE otherwise
+     */
+    abstract function accept(Phergie_Plugin_Abstract $plugin);
 }

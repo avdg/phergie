@@ -433,21 +433,21 @@ class Phergie_Plugin_Handler implements IteratorAggregate, Countable
         return new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), $this->filters);
     }
 
-	/**
-	 * Adds the specified filter, to be used by the plugins iterator
-	 * The filter will be used by every iterator from getIterator() as long as
-	 * the current connection stays the same (i.e. on setConnection() the
-	 * list of filters is reset automatically)
-	 *
-	 * @param Phergie_Plugin_Filter_Abstract $filter	filter object
-	 *
-	 * @return Phergie_Plugin_Handler					Provides a fluent API
-	 */
-	public function addFilter(Phergie_Plugin_Filter_Abstract $filter)
-	{
-		$this->filters[] = $filter;
-		return $this;
-	}
+    /**
+     * Adds the specified filter, to be used by the plugins iterator
+     * The filter will be used by every iterator from getIterator() as long as
+     * the current connection stays the same (i.e. on setConnection() the
+     * list of filters is reset automatically)
+     *
+     * @param Phergie_Plugin_Filter_Abstract $filter    filter object
+     *
+     * @return Phergie_Plugin_Handler                    Provides a fluent API
+     */
+    public function addFilter(Phergie_Plugin_Filter_Abstract $filter)
+    {
+        $this->filters[] = $filter;
+        return $this;
+    }
 
     /**
      * Proxies method calls to all plugins containing the called method.
@@ -461,7 +461,7 @@ class Phergie_Plugin_Handler implements IteratorAggregate, Countable
     {
         // if the currently active connection is being set, we reset the filters
         if ('setConnection' == $name) {
-        	$this->filters = array();
+            $this->filters = array();
         }
         foreach ($this->getIterator() as $plugin) {
             call_user_func_array(array($plugin, $name), $args);

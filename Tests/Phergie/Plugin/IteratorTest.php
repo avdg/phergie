@@ -30,12 +30,12 @@
  */
 class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
 {
-	/**
-	 * Array of all the mock plugins loaded into the iterator
-	 *
-	 * @var array
-	 */
-	protected $plugins;
+    /**
+     * Array of all the mock plugins loaded into the iterator
+     *
+     * @var array
+     */
+    protected $plugins;
 
     /**
      * Initializes the mock plugins
@@ -45,11 +45,11 @@ class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
     public function setUp()
     {
         $this->plugins = array(
-        	$this->getMockPlugin('0'),
-        	$this->getMockPlugin('1'),
-        	$this->getMockPlugin('2'),
-        	$this->getMockPlugin('3'),
-        	$this->getMockPlugin('4'),
+            $this->getMockPlugin('0'),
+            $this->getMockPlugin('1'),
+            $this->getMockPlugin('2'),
+            $this->getMockPlugin('3'),
+            $this->getMockPlugin('4'),
         );
     }
 
@@ -84,7 +84,7 @@ class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
         $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array());
         $actual = array();
         foreach ($iterator as $plugin) {
-        	$actual[] = $plugin->getName();
+            $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
     }
@@ -98,15 +98,15 @@ class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
     {
         $filter = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter
-        	->expects($this->exactly(5))
-        	->method('accept')
-        	->will($this->returnValue(true))
-        	;
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
         $expected = range(0, 4);
         $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter));
         $actual = array();
         foreach ($iterator as $plugin) {
-        	$actual[] = $plugin->getName();
+            $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
     }
@@ -120,15 +120,15 @@ class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
     {
         $filter = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter
-        	->expects($this->exactly(5))
-        	->method('accept')
-        	->will($this->returnValue(false))
-        	;
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(false))
+            ;
         $expected = array();
         $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter));
         $actual = array();
         foreach ($iterator as $plugin) {
-        	$actual[] = $plugin->getName();
+            $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
     }
@@ -142,27 +142,27 @@ class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
     {
         $filter1 = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter1
-        	->expects($this->exactly(5))
-        	->method('accept')
-        	->will($this->returnValue(true))
-        	;
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
         $filter2 = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter2
-        	->expects($this->exactly(5))
-        	->method('accept')
-        	->will($this->returnValue(true))
-        	;
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
         $filter3 = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter3
-        	->expects($this->exactly(5))
-        	->method('accept')
-        	->will($this->returnValue(true))
-        	;
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
         $expected = range(0, 4);
         $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter1, $filter2, $filter3));
         $actual = array();
         foreach ($iterator as $plugin) {
-        	$actual[] = $plugin->getName();
+            $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
     }
@@ -176,27 +176,27 @@ class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
     {
         $filter1 = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter1
-        	->expects($this->exactly(5))
-        	->method('accept')
-        	->will($this->onConsecutiveCalls(true, true, true, false, true))
-        	;
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->onConsecutiveCalls(true, true, true, false, true))
+            ;
         $filter2 = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter2
-        	->expects($this->exactly(4))
-        	->method('accept')
-        	->will($this->onConsecutiveCalls(true, false, true, false))
-        	;
+            ->expects($this->exactly(4))
+            ->method('accept')
+            ->will($this->onConsecutiveCalls(true, false, true, false))
+            ;
         $filter3 = $this->getMock('Phergie_Plugin_Filter_Abstract');
         $filter3
-        	->expects($this->exactly(2))
-        	->method('accept')
-        	->will($this->onConsecutiveCalls(false, true))
-        	;
+            ->expects($this->exactly(2))
+            ->method('accept')
+            ->will($this->onConsecutiveCalls(false, true))
+            ;
         $expected = array(2);
         $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter1, $filter2, $filter3));
         $actual = array();
         foreach ($iterator as $plugin) {
-        	$actual[] = $plugin->getName();
+            $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
     }

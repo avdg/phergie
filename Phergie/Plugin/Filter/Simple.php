@@ -101,11 +101,11 @@ class Phergie_Plugin_Filter_Simple extends Phergie_Plugin_Filter_Abstract
     /**
      * Implements Phergie_Plugin_Filter_Abstract::accept().
      *
-	 * @param Phergie_Plugin_Abstract		the plugin to filter
-	 *
-	 * @return bool							TRUE to include the plugin, FALSE otherwise
-	 */
-	public function accept(Phergie_Plugin_Abstract $plugin)
+     * @param Phergie_Plugin_Abstract The plugin to filter
+     *
+     * @return bool TRUE to include the plugin, FALSE otherwise
+     */
+    public function accept(Phergie_Plugin_Abstract $plugin)
     {
         if (!$this->plugins && !$this->methods) {
             return true;

@@ -40,8 +40,8 @@ class Phergie_Plugin_Iterator extends FilterIterator
     /**
      * Constructor -- We set up the filters to be used
      *
-     * @param Iterator               $iterator			Iterator to filter
-     * @param array                  $filters			Filters to be used
+     * @param Iterator               $iterator            Iterator to filter
+     * @param array                  $filters            Filters to be used
      *
      * @return void
      */
@@ -51,16 +51,16 @@ class Phergie_Plugin_Iterator extends FilterIterator
         parent::__construct($iterator);
     }
 
-	/**
+    /**
      * Fixes a bug in FilterIterator
      *
      * @return mixed
      * @link http://bugs.php.net/bug.php?id=52560
-	 */
-	public function current()
-	{
-		return $this->getInnerIterator()->current();
-	}
+     */
+    public function current()
+    {
+        return $this->getInnerIterator()->current();
+    }
 
     /**
      * Implements FilterIterator::accept().
@@ -73,12 +73,12 @@ class Phergie_Plugin_Iterator extends FilterIterator
         if (empty($this->filters)) {
             return true;
         }
-    	$plugin = $this->current();
-    	foreach ($this->filters as $filter) {
-    		if (!$filter->accept($plugin)) {
-    			return false;
-    		}
-    	}
-    	return true;
+        $plugin = $this->current();
+        foreach ($this->filters as $filter) {
+            if (!$filter->accept($plugin)) {
+                return false;
+            }
+        }
+        return true;
     }
 }
