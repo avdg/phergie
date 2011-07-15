@@ -100,7 +100,17 @@ class Phergie_Plugin_Jira extends Phergie_Plugin_Abstract
             }
         }
 
-        $this->doPrivmsg('#Tech', "{$source} certified {$key}.");
+        $release_channel = $this->config['jira.release_channel'];
+        if ($release_channel) {
+            $this->doPrivmsg($release_channel, "{$source} certified {$key}.");
+        }
+
+        $release_mgr = $this->config['jira.release_mgr'];
+        if ($release_mgr) {
+            $this->doPrivmsg($release_mgr, "{$source} certified {$key}.");
+        }
+
+
     }
 
     public function login()
