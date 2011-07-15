@@ -401,12 +401,14 @@ class Phergie_Bot
             }
             catch (Phergie_Driver_Exception $e)
             {
-                if (time() < $oldTime + 60 * 30) {
+                if (!$this->getConfig('reconnect', true)) throw $e;
+                
+                if (time() < $oldTime + $this->getConfig('reconnect.timespan', 60 * 30)) {
                     $oldTime = time();
                     $failures++;
 
                     // failed 3 times within a short time, let's just stop.
-                    if ($failures > 3) {
+                    if ($failures > $this->getConfig('reconnect.retries', 3)) {
                         $this->getUi()->onShutdown();
                         return $this;
                     }
