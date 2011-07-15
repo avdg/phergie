@@ -249,11 +249,7 @@ class Phergie_Driver_Streams extends Phergie_Driver_Abstract
 
         // Parse the command and arguments
         list($cmd, $args) = array_pad(explode(' ', $buffer, 2), 2, null);
-        print "command: ". $cmd.PHP_EOL;
-        print "args: " . print_r($args);
-        print PHP_EOL;
-
-
+        
         // Parse the server name or hostmask
         if (strpos($prefix, '@') === false) {
             $hostmask = new Phergie_Hostmask(
@@ -273,7 +269,6 @@ class Phergie_Driver_Streams extends Phergie_Driver_Abstract
         case 'pong':
         case 'error':
             $args = array_filter(array(ltrim($args, ':')));
-            if (!is_array($args)) $args = array($args);
             break;
 
         case 'privmsg':
@@ -298,8 +293,8 @@ class Phergie_Driver_Streams extends Phergie_Driver_Abstract
                     $args = array($source, $args);
                     break;
                 default:
-                  $args = array();
-                  break;
+                    $args = array();
+                    break;
                 }
             }
             break;
@@ -330,10 +325,6 @@ class Phergie_Driver_Streams extends Phergie_Driver_Abstract
                 ->setDescription($args);
         } else {
             $event = new Phergie_Event_Request;
-
-          var_dump($cmd);
-          var_dump($args);
-          var_dump($hostmask);
             $event
                 ->setType($cmd)
                 ->setArguments($args);
