@@ -28,7 +28,7 @@
  * @license  http://phergie.org/license New BSD License
  * @link     http://pear.phergie.org/package/Phergie_Tests
  */
-abstract class Phergie_Plugin_TwitterTest extends Phergie_Plugin_TestCase
+class Phergie_Plugin_TwitterTest extends Phergie_Plugin_TestCase
 {
     /**
      * Tests for appropriate plugin requirements.
