@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Phergie
  *
@@ -18,8 +19,8 @@
  * @license   http://phergie.org/license New BSD License
  * @link      http://pear.phergie.org/package/Phergie_Tests
  */
-
-defined('PHERGIE_BASE_PATH') or define('PHERGIE_BASE_PATH', dirname(dirname(dirname(__FILE__))));
+defined('PHERGIE_BASE_PATH') or define('PHERGIE_BASE_PATH',
+                dirname(dirname(dirname(__FILE__))));
 
 require_once PHERGIE_BASE_PATH . '/Phergie/Autoload.php';
 
@@ -34,13 +35,13 @@ require_once PHERGIE_BASE_PATH . '/Phergie/Autoload.php';
  */
 class Phergie_AutoloadTest extends PHPUnit_Framework_TestCase
 {
+
     /**
      * SPL autoloader callbacks
      *
      * @var array
      */
     private $callbacks;
-
     /**
      * Old include path
      *
@@ -64,8 +65,10 @@ class Phergie_AutoloadTest extends PHPUnit_Framework_TestCase
         $functions = spl_autoload_functions();
         if (is_array($functions)) {
             foreach ($functions as $callback) {
-                $this->callbacks[] = $callback;
-                spl_autoload_unregister($callback);
+                if ($callback !== 'phpunit_autoload') {
+                    $this->callbacks[] = $callback;
+                    spl_autoload_unregister($callback);
+                }
             }
         }
     }
@@ -104,11 +107,12 @@ class Phergie_AutoloadTest extends PHPUnit_Framework_TestCase
      */
     public function testRegisterAutoloader()
     {
+        $preRegisterCount = count(spl_autoload_functions());
+
         Phergie_Autoload::registerAutoloader();
         $this->assertEquals(
-            1,
-            count(spl_autoload_functions()),
-            'Autoloader was not registered'
+                $preRegisterCount + 1, count(spl_autoload_functions()),
+                'Autoloader was not registered'
         );
     }
 
@@ -145,6 +149,56 @@ class Phergie_AutoloadTest extends PHPUnit_Framework_TestCase
     }
 
     /**
+     * Tests that classes and interfaces are loaded without problems
+     *
+     */
+    public function testExistingClassAndInterface()
+    {
+        // Fake environment and register autoloader
+        $path = dirname(__FILE__) . '/Autoload/_ExistingClassesTest';
+        set_include_path($path . PATH_SEPARATOR . get_include_path());
+        Phergie_Autoload::registerAutoloader();
+
+        $this->assertTrue(class_exists('Phergie_Valid_Class', true));
+        $this->assertTrue(interface_exists('Phergie_Valid_Interface', true));
+    }
+
+    /**
+     * Tests that loading an non existing class doesn't result into a crash
+     *
+     * @return void
+     */
+    public function testNonExistingClass()
+    {
+        Phergie_Autoload::registerAutoloader();
+        $this->assertFalse(class_exists('Phergie_Unexisting_Class', true));
+    }
+
+    /**
+     * Tests that expects an error if an expected class wasn't found in a file
+     *
+     * @return void
+     */
+    public function testClassNotInFile()
+    {
+        // Fake environment and register autoloader
+        $path = dirname(__FILE__) . '/Autoload/_ClassNotInFileTest';
+        set_include_path($path . PATH_SEPARATOR . get_include_path());
+        Phergie_Autoload::registerAutoloader();
+
+        try {
+            class_exists('Phergie_Missing_Class', true);
+            $this->fail('Expected exception not throwen');
+        } catch (Phergie_Exception $e) {
+            $this->assertEquals(
+                'Expected class Phergie_Missing_Class in '
+                . $path . '/Phergie/Missing/Class.php not found',
+                $e->getMessage()
+            );
+        }
+    }
+
+    /**
      * Prevents preservation of global state in cases where test methods
      * must be run in separate processes.
      *
@@ -158,4 +212,5 @@ class Phergie_AutoloadTest extends PHPUnit_Framework_TestCase
         $this->setPreserveGlobalState(false);
         return parent::run($result);
     }
+
 }

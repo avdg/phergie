@@ -84,14 +84,28 @@ class Phergie_Plugin_FeedTicker extends Phergie_Plugin_Abstract
             $this->fail('PDO and pdo_sqlite extensions must be installed');
         }
 
-        $dir = dirname(__FILE__) . '/' . $this->getName();
-        $path = $dir . '/feedticker.db';
-        if (!file_exists($dir)) {
-            mkdir($dir);
+        $defaultDbLocation = dirname(__FILE__) . '/FeedTicker/feedticker.db';
+
+        $fileName = $this->getConfig('feedticker.sqlite_db', $defaultDbLocation);
+        $dirName = dirname($fileName);
+
+        $exists = file_exists($fileName);
+        if (!file_exists($dirName)) {
+            mkdir($dirName);
+        }
+
+        if ((file_exists($fileName) && !is_writable($fileName))
+            || (!file_exists($fileName) && !is_writable($dirName))
+        ) {
+            throw new Phergie_Plugin_Exception(
+                'SQLite DB file exists and cannot be written,'
+                . ' OR does not exist and cannot be created: '
+                . $fileName
+            );
         }
 
         try {
-            $this->db = new PDO('sqlite:' . $path);
+            $this->db = new PDO('sqlite:' . $fileName);
             $this->createTables();
         } catch (PDO_Exception $e) {
             throw new Phergie_Plugin_Exception($e->getMessage());
