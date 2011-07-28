@@ -59,6 +59,13 @@ class Phergie_Plugin_Qdb extends Phergie_Plugin_Abstract
      */
     public function onCommandQdb($id)
     {
+        $id = $this->filter($id);
+
+        if ($id === false) {
+            $this->doPrivmsg($this->getEvent()->getSource(), 'Invalid quote');
+            return;
+        }
+
         $data = file_get_contents('http://qdb.us/' . $id);
         if (preg_match('/<span class=qt id=qt(\S+)>(.*?)<\/span>/si', $data, $matches)) {
             $id = $matches[1];
@@ -69,5 +76,15 @@ class Phergie_Plugin_Qdb extends Phergie_Plugin_Abstract
             }
             $this->doPrivmsg($this->getEvent()->getSource(), 'qdb.us/' . $id . ': ' . $quote);
         }
+    }
+
+    /**
+     * Filters or blocks malicious input
+     *
+     * @return string|bool
+     */
+    public function filter($id)
+    {
+        return $id;
     }
 }
