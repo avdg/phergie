@@ -213,29 +213,6 @@ class Phergie_BotTest extends Phergie_TestCase
     }
 
     /**
-     * Tests that a default connection handler is used when none is set.
-     *
-     * @return void
-     */
-    public function testGetConnectionHandler()
-    {
-        $connections = $this->bot->getConnectionHandler();
-        $this->assertInstanceOf('Phergie_Connection_Handler', $connections);
-    }
-
-    /**
-     * Tests that a custom connection handler can be set.
-     *
-     * @return void
-     */
-    public function testSetConnectionHandler()
-    {
-        $connections = $this->getMockConnectionHandler();
-        $this->bot->setConnectionHandler($connections);
-        $this->assertSame($connections, $this->bot->getConnectionHandler());
-    }
-
-    /**
      * Tests that a default end-user interface is used when none is set.
      *
      * @return void
@@ -317,7 +294,6 @@ class Phergie_BotTest extends Phergie_TestCase
     {
         $this->bot->setConfig($this->getMockConfig());
         $this->bot->setDriver($this->getMockDriver());
-        $this->bot->setConnectionHandler($this->getMockConnectionHandler());
         $this->bot->setUi($this->getMockUi());
         $this->bot->setPluginHandler($this->getMockPluginHandler());
         $this->bot->setProcessor($this->getMockProcessor($this->bot));
@@ -435,12 +411,6 @@ class Phergie_BotTest extends Phergie_TestCase
         $this->injectDependencies();
         $this->setConfig('connections', array($data));
 
-        $connections = $this->getMockConnectionHandler();
-        $connections
-            ->expects($this->once())
-            ->method('addConnection')
-            ->with($this->isInstanceOf('Phergie_Connection'));
-
         $ui = $this->getMockUi();
         $ui
             ->expects($this->once())
@@ -478,12 +448,6 @@ class Phergie_BotTest extends Phergie_TestCase
     public function testRunHandlesEvents()
     {
         $this->injectDependencies();
-
-        $connections = $this->getMockConnectionHandler();
-        $connections
-            ->expects($this->exactly(2))
-            ->method('count')
-            ->will($this->onConsecutiveCalls(1, 0));
 
         $ui = $this->getMockUi();
         $ui

@@ -102,8 +102,7 @@ class Phergie_Process_Async extends Phergie_Process_Abstract
          */
         $hostmasks = $this->driver->getActiveReadSockets($this->sec, $this->usec);
 
-        $connections = $this->connections->getConnections();
-        foreach ($connections as $connection) {
+        foreach ($this->connections as $id => $connection) {
             $this->driver->setConnection($connection);
             $this->plugins->setConnection($connection);
 
@@ -127,7 +126,7 @@ class Phergie_Process_Async extends Phergie_Process_Abstract
             /**
              * Handle any outgoing events for this connection.
              */
-            $this->processEvents($connection);
+            $this->processEvents($id);
         }
     }
 }

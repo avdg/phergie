@@ -50,11 +50,11 @@ class Phergie_Bot
     protected $config;
 
     /**
-     * Current connection handler instance
+     * List of current connections
      *
      * @var Phergie_Connection_Handler
      */
-    protected $connections;
+    public $connections;
 
     /**
      * Current plugin handler instance
@@ -249,33 +249,6 @@ class Phergie_Bot
     }
 
     /**
-     * Returns a connection handler instance, creating it if it does not
-     * already exist and using a default class if none has been set.
-     *
-     * @return Phergie_Connection_Handler
-     */
-    public function getConnectionHandler()
-    {
-        if (empty($this->connections)) {
-            $this->connections = new Phergie_Connection_Handler;
-        }
-        return $this->connections;
-    }
-
-    /**
-     * Sets the connection handler instance to use.
-     *
-     * @param Phergie_Connection_Handler $handler Connection handler instance
-     *
-     * @return Phergie_Bot Provides a fluent interface
-     */
-    public function setConnectionHandler(Phergie_Connection_Handler $handler)
-    {
-        $this->connections = $handler;
-        return $this;
-    }
-
-    /**
      * Returns an end-user interface instance, creating it if it does not
      * already exist and using a default class if none has been set.
      *
@@ -388,13 +361,12 @@ class Phergie_Bot
         }
 
         $driver = $this->getDriver();
-        $connections = $this->getConnectionHandler();
         $plugins = $this->getPluginHandler();
         $ui = $this->getUi();
 
         foreach ($config['connections'] as $data) {
             $connection = new Phergie_Connection($data);
-            $connections->addConnection($connection);
+            $this->connections[] = $connection;
 
             $ui->onConnect($data['host']);
             $driver->setConnection($connection)->doConnect();
@@ -421,8 +393,7 @@ class Phergie_Bot
 
         $processor = $this->getProcessor();
 
-        $connections = $this->getConnectionHandler();
-        while (count($connections)) {
+        while ($processor->hasActiveConnections()) {
             $processor->handleEvents();
         }
 

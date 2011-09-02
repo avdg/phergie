@@ -84,10 +84,20 @@ abstract class Phergie_Process_Abstract
     {
         $this->driver = $bot->getDriver();
         $this->plugins = $bot->getPluginHandler();
-        $this->connections = $bot->getConnectionHandler();
+        $this->connections = $bot->connections;
         $this->events = $bot->getEventHandler();
         $this->ui = $bot->getUi();
         $this->options = $options;
+    }
+
+    /**
+     * Returns true if there are active connections
+     *
+     * @return bool
+     */
+    public function hasActiveConnections()
+    {
+        return !empty($this->connections);
     }
 
     /**
@@ -97,12 +107,12 @@ abstract class Phergie_Process_Abstract
      *
      * @return void
      */
-    protected function processEvents(Phergie_Connection $connection)
+    protected function processEvents($id)
     {
         $this->plugins->preDispatch();
         if (count($this->events)) {
             foreach ($this->events as $event) {
-                $this->ui->onCommand($event, $connection);
+                $this->ui->onCommand($event, $this->connections[$id]);
 
                 $method = 'do' . ucfirst(strtolower($event->getType()));
                 call_user_func_array(
@@ -114,8 +124,8 @@ abstract class Phergie_Process_Abstract
         $this->plugins->postDispatch();
 
         if ($this->events->hasEventOfType(Phergie_Event_Request::TYPE_QUIT)) {
-            $this->ui->onQuit($connection);
-            $this->connections->removeConnection($connection);
+            $this->ui->onQuit($this->connections[$id]);
+            unset($this->connections[$id]);
         }
 
         $this->events->clearEvents();

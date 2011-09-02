@@ -39,7 +39,7 @@ class Phergie_Process_Standard extends Phergie_Process_Abstract
      */
     public function handleEvents()
     {
-        foreach ($this->connections as $connection) {
+        foreach ($this->connections as $id => $connection) {
             $this->driver->setConnection($connection);
             $this->plugins->setConnection($connection);
             $this->plugins->onTick();
@@ -51,7 +51,7 @@ class Phergie_Process_Standard extends Phergie_Process_Abstract
                 $this->plugins->{'on' . ucfirst($event->getType())}();
             }
 
-            $this->processEvents($connection);
+            $this->processEvents($id);
         }
     }
 }
