@@ -91,4 +91,170 @@ class Phergie_Plugin_CacheTest extends Phergie_Plugin_TestCase
         $this->assertFalse($this->plugin->fetch('bar'));
         $this->assertFalse($this->plugin->expire('bar'));
     }
+
+    public function testSetBackendsWithEmptyArray()
+    {
+        $this->plugin->addBackends(array());
+        $this->assertEquals(array(), $this->plugin->getBackends());
+    }
+
+    public function testSetBackendsWithInvalidObject()
+    {
+        $this->plugin->addBackends(array(
+            array('class' => new stdClass)
+        ));
+        $this->assertEquals(array(), $this->plugin->getBackends());
+    }
+
+    public function testSetBackendsByClassname()
+    {
+        $this->markTestIncomplete();
+        $this->plugin->addBackends(array(
+            array('class' => 'Test1')
+        ));
+
+        $output = $this->plugin->getBackends();
+        $this->assertInternalType('array', $output);
+        $this->assertEquals(1, count($output));
+        $this->assertInstanceOf('Phergie_plugin_Cache_Backend_Test1', $output[0]);
+    }
+
+    public function testSetBackendsByObjects()
+    {
+        $this->plugin->addBackends(array(
+            array('class' => new Phergie_Plugin_Cache_Backend_Test1)
+        ));
+
+        $output = $this->plugin->getBackends();
+        $this->assertInternalType('array', $output);
+        $this->assertEquals(1, count($output));
+        $this->assertInstanceOf('Phergie_plugin_Cache_Backend_Test1', $output[0]);
+    }
+
+    public function testSetBackendsWithConfig()
+    {
+    }
+}
+
+class Phergie_Plugin_Cache_Backend_TestDummy implements Phergie_Plugin_Cache_Backend
+{
+    protected $backend = array();
+
+    protected $recorder = array();
+
+    /**
+     * Checks if the given key exists
+     *
+     * @param string $key Key to be checked if it exists
+     *
+     * @return bool
+     */
+    public function exists($key)
+    {
+        $this->recorder[] = 'Exists ' . $key;
+        return isset($this->backend[$key]);
+    }
+
+    /**
+     * Fetches a previously stored value
+     *
+     * @param string $key Key associated with the value
+     *
+     * @return mixed Stored value or FALSE if no value or an expired value
+     *         is associated with the specified key
+     */
+    public function fetch($key)
+    {
+        $this->recorder[] = 'Fetch ' . $key;
+
+        if (!isset($this->backend[$key])) {
+            return false;
+        }
+
+        return $this->backend[$key]['data'];
+    }
+
+    /**
+     * Stores a value in the backend cache
+     *
+     * @param string   $key    Key associate with the value
+     * @param mixed    $data   Data to be stored
+     * @param int|null $expire Time when cache expires or NULL if never expires
+     *
+     * @return bool
+     */
+    public function store($key, $data, $expires)
+    {
+        $this->recorder[] = "Store $key $value $expires";
+        $this->backend[$key] = array(
+            'data'    => $data,
+            'expires' => $expires,
+        );
+        return true;
+    }
+
+    /**
+     * Expires a value that has exceeded its time to live
+     *
+     * @param string $key Key associated with the value to expire
+     *
+     * @return bool
+     */
+    public function expire($key)
+    {
+        $this->recorder[] = 'Expire ' . $key;
+
+        if (!isset($this->backend[$key])) {
+            return false;
+        }
+
+        unset($this->backend[$key]);
+        return true;
+    }
+
+    /**
+     * Get the expire date of a given key
+     *
+     * @param string $key Key of the to be fetched expiration time
+     *
+     * @return int
+     */
+    public function getExpiration($key)
+    {
+        $this->recorder[] = 'GetExpire ' . $key;
+
+        if (!isset($this->backend[$key])) {
+            return false;
+        }
+
+        return $this->backend[$key]['expiration'];
+    }
+
+    /**
+     * Retrieve recorded actions
+     *
+     * @return array
+     */
+    public function getRecords()
+    {
+        return $this->recorder;
+    }
+
+    /**
+     * Cleans up the recorder
+     *
+     * @return void
+     */
+    public function clearRecorder()
+    {
+        $this->recorder = array();
+    }
+}
+
+class Phergie_Plugin_Cache_Backend_Test1 extends Phergie_Plugin_Cache_Backend_TestDummy
+{
+}
+
+class Phergie_Plugin_Cache_Backend_Test2 extends Phergie_Plugin_Cache_Backend_TestDummy
+{
 }
