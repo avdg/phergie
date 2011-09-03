@@ -31,127 +31,171 @@
 class Phergie_Plugin_IteratorTest extends PHPUnit_Framework_TestCase
 {
     /**
-     * Iterator instance being tested
-     *
-     * @var Phergie_Plugin_Iterator
-     */
-    protected $iterator;
-
-    /**
-     * List of mock plugin instances to be iterated
+     * Array of all the mock plugins loaded into the iterator
      *
      * @var array
      */
     protected $plugins;
 
     /**
-     * Initializes the iterator instance being tested.
+     * Initializes the mock plugins
      *
      * @return void
      */
     public function setUp()
     {
-        $this->plugins = array();
-        foreach (range(0, 4) as $index) {
-            $plugin = $this->getMock('Phergie_Plugin_Abstract');
-            $plugin
-                ->expects($this->any())
-                ->method('getName')
-                ->will($this->returnValue($index));
-            $this->plugins[] = $plugin;
-        }
-
-        $this->iterator = new Phergie_Plugin_Iterator(
-            new ArrayIterator($this->plugins)
+        $this->plugins = array(
+            $this->getMockPlugin('0'),
+            $this->getMockPlugin('1'),
+            $this->getMockPlugin('2'),
+            $this->getMockPlugin('3'),
+            $this->getMockPlugin('4'),
         );
     }
 
     /**
-     * Tests that all plugins are iterated when no filters are applied.
+     * Returns a mock plugin instance.
+     *
+     * @param string $name    Optional short name for the mock plugin, defaults
+     *        to 'TestPlugin'
+     * @param array  $methods Optional list of methods to override
+     *
+     * @return Phergie_Plugin_Abstract
+     */
+    protected function getMockPlugin($name = 'TestPlugin', array $methods = array())
+    {
+        $methods[] = 'getName';
+        $plugin = $this->getMock('Phergie_Plugin_Abstract', $methods);
+        $plugin
+            ->expects($this->any())
+            ->method('getName')
+            ->will($this->returnValue($name));
+        return $plugin;
+    }
+
+    /**
+     * Tests we get all plugins when no filters are set
      *
      * @return void
      */
     public function testIteratesAllPluginsWithNoFilters()
     {
         $expected = range(0, 4);
+        $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array());
         $actual = array();
-        foreach ($this->iterator as $plugin) {
+        foreach ($iterator as $plugin) {
             $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
     }
 
     /**
-     * Tests that appropriate plugins are iterated when plugin name filters
-     * are applied.
+     * Tests we get all plugins when filter accept
      *
      * @return void
      */
-    public function testIteratesPluginsWithNameFilters()
+    public function testIteratesAllPluginsWhenFilterAccept()
     {
-        // Test acceptance of strings and fluent interface implementation
-        $returned = $this->iterator->addPluginFilter('0');
-        $this->assertSame($this->iterator, $returned);
-
-        // Test acceptance of arrays
-        $this->iterator->addPluginFilter(array('1', '3'));
-
-        // Test application of filters to iteration
-        $expected = array('2', '4');
-        $actual = array();
-        foreach ($this->iterator as $plugin) {
-            $actual[] = $plugin->getName();
-        }
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * Tests that appropriate plugins are iterated when method name filters
-     * are applied.
-     *
-     * The same method name is used in all cases here because mocked methods
-     * of mock objects do not appear to be detected by method_exists() or
-     * ReflectionClass, so filtering by a method defined in the base plugin
-     * class seems the easiest way to test that method filtering really
-     * works.
-     *
-     * @return void
-     */
-    public function testIteratesPluginsWithMethodFilters()
-    {
-        // Tests acceptance of strings and fluent interface implementation
-        $returned = $this->iterator->addMethodFilter('getName');
-        $this->assertSame($this->iterator, $returned);
-
-        // Test acceptance of arrays
-        $this->iterator->addMethodFilter(array('getName', 'getName'));
-
-        // Test application of filters to iteration
-        $expected = array();
-        $actual = array();
-        foreach ($this->iterator as $plugin) {
-            $actual[] = $plugin->getName();
-        }
-        $this->assertEquals($expected, $actual);
-    }
-
-    /**
-     * Tests that all plugins are iterated after filters are cleared.
-     *
-     * @depends testIteratesPluginsWithNameFilters
-     * @depends testIteratesPluginsWithMethodFilters
-     *
-     * @return void
-     */
-    public function testIteratesPluginsAfterClearingFilters()
-    {
-        $this->iterator->addPluginFilter('0');
-        $this->iterator->addMethodFilter('method1');
-        $this->iterator->clearFilters();
-
+        $filter = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
         $expected = range(0, 4);
+        $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter));
         $actual = array();
-        foreach ($this->iterator as $plugin) {
+        foreach ($iterator as $plugin) {
+            $actual[] = $plugin->getName();
+        }
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Tests we get no plugins when filter does not accept
+     *
+     * @return void
+     */
+    public function testIteratesAllPluginsWhenFilterDoesNotAccept()
+    {
+        $filter = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(false))
+            ;
+        $expected = array();
+        $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter));
+        $actual = array();
+        foreach ($iterator as $plugin) {
+            $actual[] = $plugin->getName();
+        }
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Tests all filters are called when all accept the plugins
+     *
+     * @return void
+     */
+    public function testCallsAllFiltersIfAllAccept()
+    {
+        $filter1 = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter1
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
+        $filter2 = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter2
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
+        $filter3 = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter3
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->returnValue(true))
+            ;
+        $expected = range(0, 4);
+        $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter1, $filter2, $filter3));
+        $actual = array();
+        foreach ($iterator as $plugin) {
+            $actual[] = $plugin->getName();
+        }
+        $this->assertEquals($expected, $actual);
+    }
+
+    /**
+     * Tests stop filtering a plugin upon first filter not accepting
+     *
+     * @return void
+     */
+    public function testStopFilteringPluginUponFirstReject()
+    {
+        $filter1 = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter1
+            ->expects($this->exactly(5))
+            ->method('accept')
+            ->will($this->onConsecutiveCalls(true, true, true, false, true))
+            ;
+        $filter2 = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter2
+            ->expects($this->exactly(4))
+            ->method('accept')
+            ->will($this->onConsecutiveCalls(true, false, true, false))
+            ;
+        $filter3 = $this->getMock('Phergie_Plugin_Filter_Abstract');
+        $filter3
+            ->expects($this->exactly(2))
+            ->method('accept')
+            ->will($this->onConsecutiveCalls(false, true))
+            ;
+        $expected = array(2);
+        $iterator = new Phergie_Plugin_Iterator(new ArrayIterator($this->plugins), array($filter1, $filter2, $filter3));
+        $actual = array();
+        foreach ($iterator as $plugin) {
             $actual[] = $plugin->getName();
         }
         $this->assertEquals($expected, $actual);
