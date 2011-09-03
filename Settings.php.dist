@@ -95,4 +95,11 @@ return array(
 
     // 'ping.ping' => 10, // 10 seconds
 
+    // These settings control if the bot should try to reconnect and how often it can fail within what time limit.
+    // So if the connection fails 3 times within 30 minutes, the bot will give up and shut down.
+    
+    // 'reconnect' => true,
+    // 'reconnect.retries' => 3,
+    // 'reconnect.timespan' => 60 * 30 // 30 minutes
+
 );

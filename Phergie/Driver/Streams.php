@@ -249,7 +249,7 @@ class Phergie_Driver_Streams extends Phergie_Driver_Abstract
 
         // Parse the command and arguments
         list($cmd, $args) = array_pad(explode(' ', $buffer, 2), 2, null);
-
+        
         // Parse the server name or hostmask
         if (strpos($prefix, '@') === false) {
             $hostmask = new Phergie_Hostmask(
@@ -291,6 +291,9 @@ class Phergie_Driver_Streams extends Phergie_Driver_Abstract
                     break;
                 case 'action':
                     $args = array($source, $args);
+                    break;
+                default:
+                    $args = array();
                     break;
                 }
             }

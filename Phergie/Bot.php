@@ -412,6 +412,8 @@ class Phergie_Bot
     public function run()
     {
         set_time_limit(0);
+        $failures = 0;
+        $oldTime  = time();
 
         $timezone = $this->getConfig('timezone', 'UTC');
         date_default_timezone_set($timezone);
@@ -423,7 +425,31 @@ class Phergie_Bot
 
         $connections = $this->getConnectionHandler();
         while (count($connections)) {
-            $processor->handleEvents();
+            try
+            {
+              $processor->handleEvents();
+            }
+            catch (Phergie_Driver_Exception $e)
+            {
+                if (!$this->getConfig('reconnect', true)) throw $e;
+                
+                if (time() < $oldTime + $this->getConfig('reconnect.timespan', 60 * 30)) {
+                    $oldTime = time();
+                    $failures++;
+
+                    // failed 3 times within a short time, let's just stop.
+                    if ($failures > $this->getConfig('reconnect.retries', 3)) {
+                        $this->getUi()->onShutdown();
+                        return $this;
+                    }
+                } else {
+                    $failures = 0;
+                }
+
+                $this->getUi()->onShutdown();
+                sleep(5); // just to be a little bit nice to the irc server.
+                $this->loadConnections();
+            }
         }
 
         $this->getUi()->onShutdown();
