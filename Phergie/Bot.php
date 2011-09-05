@@ -50,13 +50,6 @@ class Phergie_Bot
     protected $config;
 
     /**
-     * List of current connections
-     *
-     * @var Phergie_Connection_Handler
-     */
-    public $connections;
-
-    /**
      * Current plugin handler instance
      *
      * @var Phergie_Plugin_Handler
@@ -360,19 +353,7 @@ class Phergie_Bot
             return;
         }
 
-        $driver = $this->getDriver();
-        $plugins = $this->getPluginHandler();
-        $ui = $this->getUi();
-
-        foreach ($config['connections'] as $data) {
-            $connection = new Phergie_Connection($data);
-            $this->connections[] = $connection;
-
-            $ui->onConnect($data['host']);
-            $driver->setConnection($connection)->doConnect();
-            $plugins->setConnection($connection);
-            $plugins->onConnect();
-        }
+        $this->getProcessor()->addConnections($config['connections']);
     }
 
     /**

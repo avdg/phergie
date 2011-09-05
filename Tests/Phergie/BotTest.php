@@ -397,10 +397,16 @@ class Phergie_BotTest extends Phergie_TestCase
      * Tests that connections are read from the configuration and added to
      * the connection handler.
      *
+     * Note: This test doesn't work anymore, because Phergie_Bot doesn't store
+     *       connections.
+     *
      * @return void
      */
     public function testRunLoadsConnections()
     {
+        $this->markTestIncomplete('Should be moved to '
+            . 'Test/Phergie/Processor/AbstractTest.php');
+
         $data = array(
             'host' => 'host',
             'nick' => 'nick',

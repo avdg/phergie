@@ -84,7 +84,6 @@ abstract class Phergie_Process_Abstract
     {
         $this->driver = $bot->getDriver();
         $this->plugins = $bot->getPluginHandler();
-        $this->connections = $bot->connections;
         $this->events = $bot->getEventHandler();
         $this->ui = $bot->getUi();
         $this->options = $options;
@@ -98,6 +97,44 @@ abstract class Phergie_Process_Abstract
     public function hasActiveConnections()
     {
         return !empty($this->connections);
+    }
+
+    /**
+     * Add a single connection
+     *
+     * @param mixed $connection Connection to be added
+     *
+     * @return void
+     */
+    public function addConnection($connection)
+    {
+        return $this->addConnections(array($connection));
+    }
+
+    /**
+     * Add a list of connections
+     *
+     * @param mixed $connections Connections to be added
+     *
+     * @return void
+     */
+    public function addConnections($connections)
+    {
+        if (!is_array($connections)) return;
+
+        foreach ($connections as $connection) {
+            if (is_array($connection)) {
+                $connection = new Phergie_Connection($connection);
+            }
+
+            if ($connection instanceof Phergie_Connection) {
+                $this->connections[] = $connection;
+                $this->ui->onConnect($connection->getHost());
+                $this->driver->setConnection($connection)->doConnect();
+                $this->plugins->setConnection($connection);
+                $this->plugins->onConnect();
+            }
+        }
     }
 
     /**
